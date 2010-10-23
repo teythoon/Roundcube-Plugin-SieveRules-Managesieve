@@ -684,6 +684,7 @@ class sieverules extends rcube_plugin
 			$nmethods = $_POST['_nmethod'];
 			$noptions = $_POST['_noption'];
 			$nmsgs = $_POST['_nmsg'];
+			$iscript = $_POST['_iscript'];
 			$dateparts = $_POST['_datepart'];
 			$weekdays = $_POST['_weekday'];
 			$advweekdays = $_POST['_advweekday'];
@@ -853,6 +854,10 @@ class sieverules extends rcube_plugin
 						$script['actions'][$i]['method'] = $method;
 						$script['actions'][$i]['options'] = $option;
 						$script['actions'][$i]['msg'] = $msg;
+						break;
+					case 'include':
+						$iscript = $iscript[$idx];
+						$script['actions'][$i]['iscript'] = $iscript;
 						break;
 				}
 
@@ -1664,6 +1669,8 @@ class sieverules extends rcube_plugin
 			$allowed_actions['discard'] = $this->gettext('messagediscard');
 		if ($config_actions['stop'] || $action['type'] == 'stop')
 			$allowed_actions['stop'] = $this->gettext('messagestop');
+		if (in_array('include', $ext) && ($config_actions['include'] || $action['type'] == 'include'))
+			$allowed_actions['include'] = $this->gettext('messageinclude');
 
 		// set the default action
 		reset($allowed_actions);
@@ -1737,6 +1744,10 @@ class sieverules extends rcube_plugin
 				$noteadvstyle = '';
 				$noteshowadv = '1';
 			}
+		}
+		elseif ($action['type'] == 'include') {
+			$method = $action['type'];
+			$iscript = htmlspecialchars($action['iscript']);
 		}
 		elseif ($action['type'] == 'discard' || $action['type'] == 'keep' || $action['type'] == 'stop') {
 			$method = $action['type'];
@@ -1953,11 +1964,13 @@ class sieverules extends rcube_plugin
 
 		$input_address = new html_inputfield(array('name' => '_redirect[]', 'style' => ($method == 'redirect' || $method == 'redirect_copy') ? '' : 'display: none;'));
 		$input_reject = new html_textarea(array('name' => '_reject[]', 'rows' => '5', 'cols' => '40', 'style' => ($method == 'reject' || $method == 'ereject') ? '' : 'display: none;'));
+		$include_script = new html_inputfield(array('name' => '_iscript[]', 'style' => $method == 'include' ? '' : 'display: none;', 'value' => $iscript));
+
 		$input_imapflags = new html_select(array('name' => '_imapflags[]', 'style' => ($method == 'imapflags' || $method == 'imap4flags') ? '' : 'display: none;'));
 		foreach($this->flags as $name => $val)
 			$input_imapflags->add(Q($this->gettext($name)), Q($val));
 
-		$actions_table->add('folder', $input_folderlist->show($folder) . $input_address->show($address) . $vacs_table->show() . $notify_table->show() . $input_imapflags->show($flags) . $input_reject->show($reject));
+		$actions_table->add('folder', $input_folderlist->show($folder) . $input_address->show($address) . $vacs_table->show() . $notify_table->show() . $input_imapflags->show($flags) . $input_reject->show($reject) . $include_script->show($iscript));
 
 		$add_button = $this->api->output->button(array('command' => 'plugin.sieverules.add_action', 'type' => 'link', 'class' => 'add', 'title' => 'sieverules.addsieveact', 'content' => ' '));
 		$delete_button = $this->api->output->button(array('command' => 'plugin.sieverules.del_action', 'type' => 'link', 'class' => 'delete', 'classact' => 'delete_act', 'title' => 'sieverules.deletesieveact', 'content' => ' '));

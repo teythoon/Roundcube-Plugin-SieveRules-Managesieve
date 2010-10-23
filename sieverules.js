@@ -327,6 +327,7 @@ if (window.rcmail) {
 				var msgs = document.getElementsByName('_msg[]');
 				var nmethods = document.getElementsByName('_nmethod[]');
 				var nmsgs = document.getElementsByName('_nmsg[]');
+				var iscript = document.getElementsByName('_iscript[]');
 				var size_test = new RegExp('^[0-9]+$');
 				var spamtest_test = new RegExp('^[0-9]+$');
 				var header_test = new RegExp('^[a-zA-Z0-9\-]+( ?, ?[a-zA-Z0-9\-]+)*$');
@@ -484,6 +485,12 @@ if (window.rcmail) {
 						if (nmsgs[i].value == '') {
 							alert(rcmail.gettext('notifynomsg','sieverules'));
 							nmsgs[i].focus();
+							return false;
+						}
+
+						if (iscript[i].value == '') {
+							alert(rcmail.gettext('notifynoiscript','sieverules'));
+							iscript[i].focus();
 							return false;
 						}
 					}
@@ -1084,6 +1091,7 @@ rcmail.sieverules_action_select = function(sel) {
 	document.getElementsByName('_redirect[]')[idx].style.display = 'none';
 	document.getElementsByName('_reject[]')[idx].style.display = 'none';
 	document.getElementsByName('_imapflags[]')[idx].style.display = 'none';
+	document.getElementsByName('_iscript[]')[idx].style.display = 'none';
 	document.getElementsByName('_day[]')[idx].parentNode.parentNode.parentNode.parentNode.style.display = 'none';
 	document.getElementsByName('_nmethod[]')[idx].parentNode.parentNode.parentNode.parentNode.style.display = 'none';
 
@@ -1099,6 +1107,8 @@ rcmail.sieverules_action_select = function(sel) {
 		document.getElementsByName('_redirect[]')[idx].style.display = '';
 	else if (obj.value == 'imapflags' || obj.value == 'imap4flags')
 		document.getElementsByName('_imapflags[]')[idx].style.display = '';
+	else if (obj.value == 'include')
+		document.getElementsByName('_iscript[]')[idx].style.display = '';
 }
 
 rcmail.sieverules_xheaders = function(sel) {

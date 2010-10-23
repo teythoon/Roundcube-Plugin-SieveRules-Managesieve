@@ -50,6 +50,7 @@ class rcube_sieve_script
 						'enotify',
 						'spamtest',
 						'date',
+						'include',
 						);
 	public $raw = '';
 
@@ -457,6 +458,10 @@ class rcube_sieve_script
 						case 'stop':
 							$actions .= RCUBE_SIEVE_INDENT . $action['type'] .";" . RCUBE_SIEVE_NEWLINE;
 							break;
+						case 'include':
+							array_push($exts, 'include');
+							$actions .= RCUBE_SIEVE_INDENT . "include :global \"" . $this->_escape_string($action['iscript']) . "\";" . RCUBE_SIEVE_NEWLINE;
+							break;
 					}
 				}
 
@@ -558,6 +563,7 @@ class rcube_sieve_script
 		$patterns[] = '^\s*vacation\s+:days\s+([0-9]+)\s+(:addresses\s+\[(.*?[^\\\])\]\s+)?(:subject\s+(".*?[^"\\\]")\s+)?(:handle\s+(".*?[^"\\\]")\s+)?(:from\s+(".*?[^"\\\]")\s+)?(.*?[^\\\]);';
 		$patterns[] = '^\s*notify\s+:method\s+(".*?[^"\\\]")\s+(:options\s+\[(.*?[^\\\])\]\s+)?(:from\s+(".*?[^"\\\]")\s+)?(:importance\s+(".*?[^"\\\]")\s+)?:message\s+(".*?[^"\\\]");';
 		$patterns[] = '^\s*notify\s+(:options\s+\[(.*?[^\\\])\]\s+)?(:from\s+(".*?[^"\\\]")\s+)?(:importance\s+(".*?[^"\\\]")\s+)?:message\s+(".*?[^"\\\]")\s+(.*);';
+		$patterns[] = '^\s*include\s+:((private)|(global))\s+"(.*)";';
 
 		$pattern = '/(' . implode('$)|(', $patterns) . '$)/ms';
 
@@ -624,6 +630,11 @@ class rcube_sieve_script
 									'from' => $this->_parse_string($matches[4]),
 									'importance' => $this->_parse_string($matches[6]),
 									'msg' => $this->_parse_string($matches[7]));
+				}
+				elseif (preg_match('/^include\s+:((private)|(global))\s+(".*")/', $content, $matches)) {
+					$result[] = array('type' => 'include',
+                                      'ilocation' => $matches[1],
+                                      'iscript' => $this->_parse_string($matches[4]));
 				}
 			}
 		}
